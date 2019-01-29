@@ -34,7 +34,7 @@
 
      其中服务`kong-migration`的启动命令为`kong migrations finish`。
 
-+ 连接Kong集群所在网络，并启动kong-dashboard
++ 连接Kong集群所在网络，并启动[kong-dashboard](https://github.com/PGBI/kong-dashboard)
 
   ```bash
   docker run --rm --network compose-0xx_default \
