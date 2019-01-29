@@ -1,10 +1,10 @@
 # a minimal Nginx container including ContainerPilot and a simple virtulhost config
-FROM nginx:latest
-
-RUN apt-get update && apt-get install -y curl unzip
+FROM nginx:alpine
 
 # we use consul-template to re-write our Nginx virtualhost config
-RUN curl -Lo /tmp/consul_template_0.14.0_linux_amd64.zip https://releases.hashicorp.com/consul-template/0.14.0/consul-template_0.14.0_linux_amd64.zip && \
+RUN apk add --no-cache curl unzip && \
+    echo "Asia/Shanghai" > /etc/timezone && \
+    curl -Lo /tmp/consul_template_0.14.0_linux_amd64.zip https://releases.hashicorp.com/consul-template/0.14.0/consul-template_0.14.0_linux_amd64.zip && \
     unzip /tmp/consul_template_0.14.0_linux_amd64.zip && \
     mv consul-template /bin
 
