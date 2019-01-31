@@ -54,6 +54,64 @@
     --basic-auth abcde=123456
   ```
 
-  
+
+### Docker环境下Kong高可用部署
+
+> 使用Docker swarm mode实现Kong的高可用
+
+```bash
+# 创建kong数据库
+docker service create \
+    --name kong-db \
+    --network kong-network \
+    -e POSTGRES_USER=kong \
+    -e POSTGRES_PASSWORD=kong \
+    -e POSTGRES_DB=kong \
+    --mount type=bind,source=/home/docker/api-data,destination=/var/lib/postgresql/data \
+    -p "5432:5432" \
+    --constraint 'node.role == manager' \
+    --hostname kong-database \
+    postgres:9.5
+
+# 初始化或迁移kong数据
+docker service create --name kong-migration \
+    --network kong-network \
+    -e KONG_DATABASE=postgres \
+    -e KONG_PG_HOST=kong-db \
+    -e KONG_PG_DATABASE=kong \
+    -e KONG_PG_PASSWORD=kong \
+    -e KONG_PG_USER=kong \
+    --restart-max-attempts 3 \
+    kong:0.14 kong migrations up
+
+# 创建kong服务
+docker service create \
+    --name kong \
+    --replicas 3 \
+    --network kong-network \
+    -e KONG_DATABASE=postgres \
+    -e KONG_PG_HOST=kong-db \
+    -e KONG_PG_DATABASE=kong \
+    -e KONG_PG_PASSWORD=kong \
+    -e KONG_PG_USER=kong \
+    -e KONG_ADMIN_LISTEN=0.0.0.0:8001 \
+    -p 8000:8000 \
+    -p 8001:8001 \
+    -p 8443:8443 \
+    -p 8444:8444 \
+    kong:0.14
+
+# 创建kong-dashboard
+docker service create \
+    --name kong-dashboard \
+    --network kong-network \
+    --constraint 'node.role == manager' \
+    -p 9080:8080 \
+    pgbi/kong-dashboard start \
+    --kong-url http://kong:8001 \
+    --basic-auth abcde=123456
+```
+
+
 
 
